@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { ColourStudio } from "@/components/colour-studio/ColourStudio";
 import { IconKhajana } from "@/components/icon-khajana/IconKhajana";
 import { ImageLab } from "@/components/image-lab/ImageLab";
 import { ToolCard } from "@/components/sections/ToolCard";
@@ -18,6 +19,9 @@ export function SectionStudio({ section }: { section: Section }) {
   }
   if (section.slug === "icon-khajana") {
     return <IconKhajana section={section} />;
+  }
+  if (section.slug === "colour-studio") {
+    return <ColourStudio section={section} />;
   }
 
   return (
