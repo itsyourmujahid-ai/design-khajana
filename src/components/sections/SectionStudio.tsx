@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { IconKhajana } from "@/components/icon-khajana/IconKhajana";
 import { ImageLab } from "@/components/image-lab/ImageLab";
 import { ToolCard } from "@/components/sections/ToolCard";
 import { ComingSoonModal } from "@/components/ui/ComingSoonModal";
@@ -14,6 +15,9 @@ export function SectionStudio({ section }: { section: Section }) {
 
   if (section.slug === "image-lab") {
     return <ImageLab section={section} />;
+  }
+  if (section.slug === "icon-khajana") {
+    return <IconKhajana section={section} />;
   }
 
   return (
