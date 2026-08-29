@@ -5,21 +5,9 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { Icon } from "@/components/ui/icon";
+import { Brand } from "@/components/layout/Brand";
 import { navItems, sections, studioCount, totalTools } from "@/lib/catalog";
 import { cn } from "@/lib/utils";
-
-function Brand() {
-  return (
-    <Link href="/" className="group flex items-center gap-3">
-      <span className="relative grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-amber-400 to-yellow-600 shadow-lg shadow-amber-500/25 transition-transform duration-300 group-hover:scale-105">
-        <Icon name="gem" className="h-5 w-5 text-zinc-950" />
-      </span>
-      <span className="font-display text-[17px] font-bold leading-none text-white">
-        Design <span className="text-gradient">Khajana</span>
-      </span>
-    </Link>
-  );
-}
 
 function NavList({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
