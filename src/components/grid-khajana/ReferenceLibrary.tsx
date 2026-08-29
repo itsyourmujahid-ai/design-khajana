@@ -134,7 +134,7 @@ export function ReferenceLibrary({ onSelectLayout, onUploadCustom }: ReferenceLi
                   className="flex items-center justify-center gap-1.5 rounded-lg border border-transparent bg-fuchsia-600 py-2 text-xs font-bold text-white transition-colors hover:bg-fuchsia-500"
                 >
                   <Icon name="layout" className="h-3.5 w-3.5" />
-                  Use Layout
+                  Use Grid
                 </button>
               </div>
             </div>

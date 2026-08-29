@@ -161,65 +161,32 @@ export function GridWorkspace() {
           </div>
         </div>
 
-        {mode === "study" && (
-          <button
-            onClick={() => setMode("use")}
-            className="w-full flex justify-center items-center gap-2 rounded-xl bg-fuchsia-600 px-4 py-3 font-bold text-white transition-colors hover:bg-fuchsia-500"
-          >
-            <Icon name="layout" className="h-4 w-4" /> Switch to Edit Mode
-          </button>
-        )}
+        <button
+          onClick={() => {
+            // Only send Grid Configuration to canvas, as specified in requirements
+            const canvasState = {
+              elements: [],
+              selectedIds: [],
+              canvasWidth: activeLayout.canvasWidth,
+              canvasHeight: activeLayout.canvasHeight,
+              canvasBg: "#ffffff",
+              showGuides: true,
+              lockGuides: false,
+              guides: [],
+              zoom: 1,
+              panX: 0,
+              panY: 0,
+              activeTool: "select",
+              gridOverlay: gridConfig // Extended for canvas implementation to draw guides
+            };
 
-        {mode === "use" && (
-          <button
-            onClick={() => {
-              // Convert Grid Khajana elements to Canvas elements format and save to LocalStorage
-              const canvasElements = elements.filter(el => el.type !== "background").map(el => ({
-                id: el.id,
-                type: el.type === "shape" ? "rectangle" : el.type,
-                name: el.label || el.type,
-                x: el.position.x,
-                y: el.position.y,
-                width: el.position.width,
-                height: el.position.height,
-                rotation: 0,
-                scaleX: 1,
-                scaleY: 1,
-                fill: el.shapeStyle?.backgroundColor || el.textStyle?.color || (el.type === "image" ? "#e5e7eb" : "transparent"),
-                opacity: 1,
-                text: el.content,
-                fontSize: el.textStyle?.fontSize,
-                fontWeight: el.textStyle?.fontWeight,
-                textAlign: el.textStyle?.textAlign,
-                fontFamily: "Arial",
-                isLocked: false,
-                isHidden: false,
-              }));
-
-              const bgElement = elements.find(el => el.type === "background");
-              const bgColor = bgElement?.shapeStyle?.backgroundColor || "#ffffff";
-
-              const canvasState = {
-                elements: canvasElements,
-                selectedIds: [],
-                canvasWidth: activeLayout.canvasWidth,
-                canvasHeight: activeLayout.canvasHeight,
-                canvasBg: bgColor,
-                zoom: 1,
-                panX: 0,
-                panY: 0,
-                activeTool: "select",
-                gridOverlay: gridConfig // Extended for canvas implementation to draw guides
-              };
-
-              localStorage.setItem('dk_canvas_save', JSON.stringify(canvasState));
-              router.push("/canvas");
-            }}
-            className="w-full flex justify-center items-center gap-2 rounded-xl bg-indigo-500 px-4 py-3 font-bold text-white transition-colors hover:bg-indigo-400"
-          >
-            <Icon name="corner" className="h-4 w-4" /> Send to Canvas
-          </button>
-        )}
+            localStorage.setItem('dk_canvas_save', JSON.stringify(canvasState));
+            router.push("/canvas");
+          }}
+          className="w-full flex justify-center items-center gap-2 rounded-xl bg-fuchsia-600 px-4 py-3 font-bold text-white transition-colors hover:bg-fuchsia-500"
+        >
+          <Icon name="corner" className="h-4 w-4" /> Use Grid in Canvas
+        </button>
       </div>
 
       {/* Main Canvas Area */}
@@ -252,12 +219,12 @@ export function GridWorkspace() {
               alignItems: el.type === 'text' ? 'flex-start' : 'center',
               justifyContent: el.type === 'text' ? (el.textStyle?.textAlign === 'center' ? 'center' : el.textStyle?.textAlign === 'right' ? 'flex-end' : 'flex-start') : 'center',
               overflow: 'hidden',
-              border: mode === "use" && !isBg ? '1px solid rgba(255,255,255,0.2)' : 'none',
-              cursor: mode === "use" && !el.isLocked ? 'pointer' : 'default',
+              border: 'none',
+              cursor: 'default',
             };
 
             return (
-              <div key={el.id} style={style} className={mode === "use" && !el.isLocked ? "hover:outline hover:outline-2 hover:outline-fuchsia-500 z-10" : "z-0"}>
+              <div key={el.id} style={style} className="z-0">
                 {el.type === 'text' && (
                   <span style={{
                     fontSize: `${(el.textStyle?.fontSize || 16) / 2}px`, // Scaled down roughly for preview
@@ -271,12 +238,6 @@ export function GridWorkspace() {
                   }}>
                     {el.content}
                   </span>
-                )}
-                {el.type === 'image' && !el.content && mode === "use" && (
-                  <div className="w-full h-full bg-zinc-200 flex flex-col items-center justify-center text-zinc-500">
-                    <Icon name="image" className="h-6 w-6 mb-2" />
-                    <span className="text-xs font-bold">REPLACE IMAGE</span>
-                  </div>
                 )}
               </div>
             );
