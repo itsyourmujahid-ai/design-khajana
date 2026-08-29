@@ -6,6 +6,7 @@ import { ColourStudio } from "@/components/colour-studio/ColourStudio";
 import { IconKhajana } from "@/components/icon-khajana/IconKhajana";
 import { ImageLab } from "@/components/image-lab/ImageLab";
 import { TypographyStudio } from "@/components/typography-studio/TypographyStudio";
+import { TextStudio } from "@/components/text-studio/TextStudio";
 import { ToolCard } from "@/components/sections/ToolCard";
 import { ComingSoonModal } from "@/components/ui/ComingSoonModal";
 import { Icon } from "@/components/ui/icon";
@@ -26,6 +27,9 @@ export function SectionStudio({ section }: { section: Section }) {
   }
   if (section.slug === "typography-studio") {
     return <TypographyStudio section={section} />;
+  }
+  if (section.slug === "text-studio") {
+    return <TextStudio section={section} />;
   }
 
   return (
