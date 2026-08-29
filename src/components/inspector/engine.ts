@@ -1,3 +1,5 @@
+import { ImageMetrics } from "./imageAnalyzer";
+
 export type InspectionResult = "good" | "warning" | "error";
 
 export interface InspectionItem {
@@ -10,16 +12,17 @@ export interface InspectionItem {
 }
 
 export interface DesignData {
-  width: number; // px
-  height: number; // px
+  width: number;
+  height: number;
   dpi: number;
   colorMode: "RGB" | "CMYK";
   contrastRatio: number;
-  fontSize: number; // px
-  lineHeight: number; // multiplier e.g. 1.5
-  letterSpacing: number; // em
-  margin: number; // px
+  fontSize: number;
+  lineHeight: number;
+  letterSpacing: number;
+  margin: number;
   isPrint: boolean;
+  metrics?: ImageMetrics; // Actual extracted metrics
 }
 
 export function inspectDesign(data: DesignData): InspectionItem[] {
@@ -29,20 +32,20 @@ export function inspectDesign(data: DesignData): InspectionItem[] {
   const totalPixels = data.width * data.height;
   if (totalPixels < 500000) {
     results.push({
-      id: "res-low", category: "Image", name: "Image Resolution", status: "error",
-      message: "Resolution is too low for most uses.",
+      id: "res-low", category: "Image", name: "Resolution", status: "error",
+      message: `Resolution is low (${data.width}x${data.height}).`,
       recommendation: "Use an image with at least 1000x1000 pixels to avoid blurriness."
     });
   } else if (totalPixels < 2000000) {
     results.push({
-      id: "res-med", category: "Image", name: "Image Resolution", status: "warning",
-      message: "Acceptable for digital, but may be too low for print.",
+      id: "res-med", category: "Image", name: "Resolution", status: "warning",
+      message: `Resolution (${data.width}x${data.height}) is okay for digital, low for large print.`,
       recommendation: "Consider a higher resolution image if printing larger than A5."
     });
   } else {
     results.push({
-      id: "res-high", category: "Image", name: "Image Resolution", status: "good",
-      message: "High resolution detected.",
+      id: "res-high", category: "Image", name: "Resolution", status: "good",
+      message: `High resolution detected (${data.width}x${data.height}).`,
       recommendation: "Excellent for both digital and high-quality print."
     });
   }
@@ -52,13 +55,13 @@ export function inspectDesign(data: DesignData): InspectionItem[] {
     if (data.dpi < 150) {
       results.push({
         id: "dpi-low", category: "Print", name: "Print DPI", status: "error",
-        message: `DPI is ${data.dpi}. Print requires at least 300 DPI for standard quality.`,
+        message: `DPI is ${data.dpi}. Print requires at least 300 DPI.`,
         recommendation: "Increase DPI to 300. Do not just upsample a low-res image."
       });
     } else if (data.dpi < 300) {
       results.push({
         id: "dpi-med", category: "Print", name: "Print DPI", status: "warning",
-        message: `DPI is ${data.dpi}. This is okay for large posters, but low for handheld print.`,
+        message: `DPI is ${data.dpi}. Okay for posters, low for handheld print.`,
         recommendation: "Increase to 300 DPI for business cards or flyers."
       });
     } else {
@@ -82,74 +85,118 @@ export function inspectDesign(data: DesignData): InspectionItem[] {
         recommendation: "Correct colour mode for physical printing."
       });
     }
+  }
+
+  // Layout - Aspect Ratio
+  const aspect = Math.max(data.width, data.height) / Math.min(data.width, data.height);
+  if (aspect > 3) {
+    results.push({
+      id: "aspect-extreme", category: "Layout", name: "Aspect Ratio", status: "warning",
+      message: `Extreme aspect ratio detected (${aspect.toFixed(2)}:1).`,
+      recommendation: "Ensure this panoramic/banner format is intended."
+    });
   } else {
-    // Digital
-    if (data.dpi > 150) {
+    results.push({
+      id: "aspect-ok", category: "Layout", name: "Aspect Ratio", status: "good",
+      message: `Standard aspect ratio (${aspect.toFixed(2)}:1).`,
+      recommendation: "Safe for most general use cases."
+    });
+  }
+
+  // Use Dynamic Extracted Metrics if available
+  if (data.metrics) {
+    const { contrastRatio, avgLuma, edgeDensity, colorVariance } = data.metrics;
+
+    // Contrast
+    if (contrastRatio < 3.5) {
       results.push({
-        id: "dpi-high-digital", category: "Image", name: "Digital DPI", status: "warning",
-        message: `DPI is ${data.dpi}. Web images typically use 72-144 DPI.`,
-        recommendation: "Consider lowering DPI to reduce file size for web."
+        id: "contrast-fail", category: "Typography", name: "Contrast", status: "error",
+        message: `Measured contrast ratio is ${contrastRatio.toFixed(1)}:1 (Fails WCAG).`,
+        recommendation: "Increase contrast between foreground elements and background to at least 4.5:1."
+      });
+    } else if (contrastRatio < 5.5) {
+      results.push({
+        id: "contrast-warn", category: "Typography", name: "Contrast", status: "warning",
+        message: `Measured contrast ratio is ${contrastRatio.toFixed(1)}:1 (Passes AA Large only).`,
+        recommendation: "Acceptable for large text/headings, but weak for fine body text."
       });
     } else {
       results.push({
-        id: "dpi-ok-digital", category: "Image", name: "Digital DPI", status: "good",
-        message: `DPI is ${data.dpi}.`,
-        recommendation: "Appropriate DPI for digital screens."
+        id: "contrast-pass", category: "Typography", name: "Contrast", status: "good",
+        message: `Measured contrast ratio is ${contrastRatio.toFixed(1)}:1.`,
+        recommendation: "Excellent readability and WCAG AAA compliance."
       });
     }
 
-    if (data.colorMode === "CMYK") {
+    // Brightness (Luma)
+    if (avgLuma < 40) {
       results.push({
-        id: "color-cmyk-digital", category: "Image", name: "Colour Mode", status: "error",
-        message: "CMYK mode detected for a digital design.",
-        recommendation: "Convert to RGB for accurate, vibrant display on screens."
+        id: "luma-dark", category: "Image", name: "Brightness", status: "warning",
+        message: "Image is unusually dark overall.",
+        recommendation: "Ensure critical details aren't lost in shadows, especially if printing on uncoated paper."
+      });
+    } else if (avgLuma > 230) {
+      results.push({
+        id: "luma-bright", category: "Image", name: "Brightness", status: "warning",
+        message: "Image is extremely bright/overexposed.",
+        recommendation: "Watch for washed-out highlights and lack of definition in bright areas."
       });
     } else {
       results.push({
-        id: "color-rgb-digital", category: "Image", name: "Colour Mode", status: "good",
-        message: "RGB mode detected.",
-        recommendation: "Perfect for digital screens."
+        id: "luma-ok", category: "Image", name: "Brightness", status: "good",
+        message: "Image brightness is well balanced.",
+        recommendation: "Good tonal distribution."
+      });
+    }
+
+    // Complexity / Density
+    if (edgeDensity > 18) {
+      results.push({
+        id: "density-high", category: "Layout", name: "Visual Complexity", status: "error",
+        message: "High density of edges/details detected.",
+        recommendation: "The design appears crowded. Increase negative space and reduce clutter."
+      });
+    } else if (edgeDensity < 3) {
+      results.push({
+        id: "density-low", category: "Layout", name: "Visual Complexity", status: "good",
+        message: "Minimalist composition detected.",
+        recommendation: "Clean use of negative space."
+      });
+    } else {
+      results.push({
+        id: "density-ok", category: "Layout", name: "Visual Complexity", status: "good",
+        message: "Balanced content density.",
+        recommendation: "Good distribution of elements."
+      });
+    }
+
+    // Colour Variety
+    if (colorVariance > 120) {
+      results.push({
+        id: "color-busy", category: "Image", name: "Colour Palette", status: "warning",
+        message: "High colour variance/clashing hues detected.",
+        recommendation: "Ensure colours don't compete for attention. Try restricting the palette."
+      });
+    } else {
+      results.push({
+        id: "color-ok", category: "Image", name: "Colour Palette", status: "good",
+        message: "Cohesive colour variance.",
+        recommendation: "Colours appear harmonized."
+      });
+    }
+
+  } else {
+    // Fallback manual metrics if no image uploaded
+    if (data.contrastRatio < 4.5) {
+      results.push({
+        id: "contrast-warn-manual", category: "Typography", name: "Contrast (Manual)", status: "warning",
+        message: `Contrast set to ${data.contrastRatio}:1.`,
+        recommendation: "Increase to at least 4.5:1."
       });
     }
   }
 
-  // Contrast
-  if (data.contrastRatio < 3) {
-    results.push({
-      id: "contrast-fail", category: "Typography", name: "Contrast", status: "error",
-      message: `Contrast ratio is ${data.contrastRatio.toFixed(1)}:1 (Fails WCAG).`,
-      recommendation: "Increase contrast to at least 4.5:1 for readability."
-    });
-  } else if (data.contrastRatio < 4.5) {
-    results.push({
-      id: "contrast-warn", category: "Typography", name: "Contrast", status: "warning",
-      message: `Contrast ratio is ${data.contrastRatio.toFixed(1)}:1 (Passes AA Large only).`,
-      recommendation: "Acceptable for large text, but increase contrast for body text."
-    });
-  } else {
-    results.push({
-      id: "contrast-pass", category: "Typography", name: "Contrast", status: "good",
-      message: `Contrast ratio is ${data.contrastRatio.toFixed(1)}:1 (Passes AA/AAA).`,
-      recommendation: "Excellent readability."
-    });
-  }
-
-  // Typography - Size
-  if (data.fontSize < 12) {
-    results.push({
-      id: "font-small", category: "Typography", name: "Font Size", status: "warning",
-      message: `Font size is ${data.fontSize}px.`,
-      recommendation: "Consider increasing base size to at least 14-16px for better legibility."
-    });
-  } else {
-    results.push({
-      id: "font-ok", category: "Typography", name: "Font Size", status: "good",
-      message: `Font size is ${data.fontSize}px.`,
-      recommendation: "Good base font size."
-    });
-  }
-
-  // Typography - Line Height
+  // Typography - Line Height (Manual fallback since we can't extract font metrics from flattened image safely without ML)
   if (data.lineHeight < 1.2) {
     results.push({
       id: "lh-tight", category: "Typography", name: "Line Height", status: "error",
@@ -167,31 +214,6 @@ export function inspectDesign(data: DesignData): InspectionItem[] {
       id: "lh-ok", category: "Typography", name: "Line Height", status: "good",
       message: `Line height is ${data.lineHeight.toFixed(1)}.`,
       recommendation: "Optimal line spacing."
-    });
-  }
-
-  // Layout - Margins / Safe Area
-  if (data.margin < 16) {
-    results.push({
-      id: "margin-tight", category: "Layout", name: "Safe Area / Margins", status: "error",
-      message: `Margins are very tight (${data.margin}px).`,
-      recommendation: "Increase margins to give the design room to breathe and avoid print cutoff."
-    });
-  } else {
-    results.push({
-      id: "margin-ok", category: "Layout", name: "Safe Area / Margins", status: "good",
-      message: `Margins look adequate (${data.margin}px).`,
-      recommendation: "Content is safely within bounds."
-    });
-  }
-
-  // Layout - Aspect Ratio
-  const aspect = Math.max(data.width, data.height) / Math.min(data.width, data.height);
-  if (aspect > 3) {
-    results.push({
-      id: "aspect-extreme", category: "Layout", name: "Aspect Ratio", status: "warning",
-      message: "Extreme aspect ratio detected.",
-      recommendation: "Ensure this is intended (e.g. panoramic or banner). Standard formats rarely exceed 16:9."
     });
   }
 

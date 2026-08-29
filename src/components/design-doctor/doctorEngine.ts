@@ -39,83 +39,13 @@ export interface Diagnosis {
   workingWell: string[];
 }
 
-// Core image heuristics via Canvas
+import { analyzeImage } from "../inspector/imageAnalyzer";
+
+// Core image heuristics via unified Canvas Engine
 export async function diagnoseDesign(file: File): Promise<Diagnosis> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    const url = URL.createObjectURL(file);
-
-    img.onload = () => {
-      const width = img.width;
-      const height = img.height;
-
-      const canvas = document.createElement("canvas");
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext("2d");
-
-      if (!ctx) {
-        URL.revokeObjectURL(url);
-        reject(new Error("Canvas not supported"));
-        return;
-      }
-
-      ctx.drawImage(img, 0, 0);
-      const imageData = ctx.getImageData(0, 0, width, height);
-      const data = imageData.data;
-
-      // Extract heuristics
-      let minLuma = 255;
-      let maxLuma = 0;
-      let totalLuma = 0;
-      let lumaVariance = 0;
-      const lumas: number[] = [];
-
-      let colorVariance = 0;
-      let edgeDensity = 0; // rough proxy for typography/clutter
-
-      const sampleStep = Math.max(1, Math.floor(data.length / 4 / 10000)); // Sample ~10k pixels
-
-      for (let i = 0; i < data.length; i += 4 * sampleStep) {
-        const r = data[i];
-        const g = data[i + 1];
-        const b = data[i + 2];
-        const a = data[i + 3];
-
-        if (a < 128) continue; // skip highly transparent
-
-        const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-        lumas.push(luma);
-        totalLuma += luma;
-
-        if (luma < minLuma) minLuma = luma;
-        if (luma > maxLuma) maxLuma = luma;
-
-        // Simple edge detection proxy: diff with next sampled pixel
-        if (i + 4 * sampleStep < data.length) {
-          const nextR = data[i + 4 * sampleStep];
-          const nextG = data[i + 4 * sampleStep + 1];
-          const nextB = data[i + 4 * sampleStep + 2];
-          const colorDiff = Math.abs(r - nextR) + Math.abs(g - nextG) + Math.abs(b - nextB);
-          if (colorDiff > 50) edgeDensity++;
-          colorVariance += colorDiff;
-        }
-      }
-
-      const avgLuma = totalLuma / Math.max(1, lumas.length);
-      for (const l of lumas) {
-        lumaVariance += Math.pow(l - avgLuma, 2);
-      }
-      lumaVariance = Math.sqrt(lumaVariance / Math.max(1, lumas.length));
-
-      // Calculate pseudo-contrast
-      const l1 = (maxLuma / 255) + 0.05;
-      const l2 = (minLuma / 255) + 0.05;
-      const contrastRatio = l1 / l2;
-
-      // Normalize heuristics to 0-100 scales
-      const edgeDensityNorm = Math.min(100, (edgeDensity / lumas.length) * 100 * 5); // Clutter / Text density
-      const colorVarNorm = Math.min(100, (colorVariance / lumas.length / 100) * 100);
+  try {
+    const metrics = await analyzeImage(file);
+    const { contrastRatio, avgLuma, edgeDensity: edgeDensityNorm, colorVariance: colorVarNorm } = metrics;
 
       // Score generation
       let scoreHierarchy = 80;
@@ -250,8 +180,7 @@ export async function diagnoseDesign(file: File): Promise<Diagnosis> {
         workingWell.push("Image assets resolved properly");
       }
 
-      URL.revokeObjectURL(url);
-      resolve({
+      return {
         healthScore: totalScore,
         healthLabel,
         scores: {
@@ -266,14 +195,9 @@ export async function diagnoseDesign(file: File): Promise<Diagnosis> {
         treatmentPlan,
         problems,
         workingWell: [...new Set(workingWell)].slice(0, 4) // max 4 unique
-      });
-    };
+      };
 
-    img.onerror = () => {
-      URL.revokeObjectURL(url);
-      reject(new Error("Failed to load design"));
-    };
-
-    img.src = url;
-  });
+  } catch (e) {
+    throw new Error("Failed to load design");
+  }
 }

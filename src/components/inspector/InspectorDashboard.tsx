@@ -52,7 +52,7 @@ export function InspectorDashboard({ activeTool }: { activeTool?: string }) {
         ...prev,
         width: result.width,
         height: result.height,
-        contrastRatio: Number(result.contrastRatio.toFixed(1))
+        metrics: result
       }));
     } catch (e) {
       console.error(e);
