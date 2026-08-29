@@ -624,6 +624,7 @@ export const overview: Section = {
 
 export const navItems: Array<{ href: string; label: string; icon: IconName }> = [
   { href: "/", label: "Overview", icon: "home" },
+  { href: "/canvas", label: "Canvas Editor", icon: "pen" },
   ...sections.map((section) => ({
     href: `/${section.slug}`,
     label: section.name,
