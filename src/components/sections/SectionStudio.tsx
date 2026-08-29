@@ -10,6 +10,7 @@ import { TextStudio } from "@/components/text-studio/TextStudio";
 import { DesignSizeLayoutStudio } from "@/components/design-size-layout/DesignSizeLayoutStudio";
 import { PrintStudio } from "@/components/print-studio/PrintStudio";
 import { InspectorStudio } from "@/components/inspector/InspectorStudio";
+import { DesignDoctorStudio } from "@/components/design-doctor/DesignDoctorStudio";
 import { ToolCard } from "@/components/sections/ToolCard";
 import { ComingSoonModal } from "@/components/ui/ComingSoonModal";
 import { Icon } from "@/components/ui/icon";
@@ -42,6 +43,9 @@ export function SectionStudio({ section }: { section: Section }) {
   }
   if (section.slug === "inspector") {
     return <InspectorStudio section={section} />;
+  }
+  if (section.slug === "design-doctor") {
+    return <DesignDoctorStudio section={section} />;
   }
 
   return (

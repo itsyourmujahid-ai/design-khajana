@@ -17,7 +17,7 @@ const stats = [
 ];
 
 function StudioCard({ section, onTool }: { section: Section; onTool: (tool: Tool) => void }) {
-  const live = ["image-lab", "icon-khajana", "colour-studio", "typography-studio", "text-studio", "design-size-layout", "print-studio", "inspector"].includes(section.slug);
+  const live = ["image-lab", "icon-khajana", "colour-studio", "typography-studio", "text-studio", "design-size-layout", "print-studio", "inspector", "design-doctor"].includes(section.slug);
 
   return (
     <div
