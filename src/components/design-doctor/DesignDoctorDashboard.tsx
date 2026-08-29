@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { Icon } from "@/components/ui/icon";
 import { cn } from "@/lib/utils";
 import { diagnoseDesign, Diagnosis } from "./doctorEngine";
 
 export function DesignDoctorDashboard() {
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -246,10 +248,55 @@ export function DesignDoctorDashboard() {
             </div>
           </div>
 
-          <div className="pt-8 flex justify-center">
+          <div className="pt-8 flex justify-center gap-4">
+             <button
+                onClick={() => {
+                  // Create a new canvas with the uploaded image as a layer
+                  if (!previewUrl) return;
+                  const img = new Image();
+                  img.onload = () => {
+                     const canvasState = {
+                        elements: [
+                          {
+                            id: "doc-img-1",
+                            type: "image",
+                            name: "Design Doctor Image",
+                            x: 0,
+                            y: 0,
+                            width: img.width,
+                            height: img.height,
+                            rotation: 0,
+                            scaleX: 1,
+                            scaleY: 1,
+                            opacity: 1,
+                            src: previewUrl,
+                            isLocked: false,
+                            isHidden: false,
+                          }
+                        ],
+                        selectedIds: [],
+                        canvasWidth: img.width,
+                        canvasHeight: img.height,
+                        canvasBg: "#ffffff",
+                        zoom: 1,
+                        panX: 0,
+                        panY: 0,
+                        activeTool: "select",
+                        // Pass doctor advice conceptually (handled locally inside canvas later)
+                        doctorAdvice: diagnosis.mainDiagnosis.fix
+                      };
+                      localStorage.setItem('dk_canvas_save', JSON.stringify(canvasState));
+                      router.push("/canvas");
+                  };
+                  img.src = previewUrl;
+                }}
+                className="flex items-center gap-2 rounded-xl bg-indigo-500 px-6 py-3 font-bold text-white shadow-lg transition-colors hover:bg-indigo-400"
+              >
+                <Icon name="corner" className="h-5 w-5" /> Fix in Canvas
+              </button>
              <button
                 onClick={() => { setDiagnosis(null); setPreviewUrl(null); setFile(null); }}
-                className="flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition-colors"
+                className="flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition-colors px-4"
               >
                 <Icon name="refresh" className="h-4 w-4" /> Start New Diagnosis
               </button>

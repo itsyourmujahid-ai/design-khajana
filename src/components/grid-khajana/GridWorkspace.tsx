@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Icon } from "@/components/ui/icon";
 import { cn } from "@/lib/utils";
 import { ReferenceLibrary } from "./ReferenceLibrary";
 import { ReferenceLayout, GridConfig, LayoutElement } from "./types";
 
 export function GridWorkspace() {
+  const router = useRouter();
   const [activeLayout, setActiveLayout] = useState<ReferenceLayout | null>(null);
   const [mode, setMode] = useState<"study" | "use" | null>(null);
 
@@ -170,7 +172,49 @@ export function GridWorkspace() {
 
         {mode === "use" && (
           <button
-            onClick={() => alert("Future integration: Will push structured layout JSON to global Canvas.")}
+            onClick={() => {
+              // Convert Grid Khajana elements to Canvas elements format and save to LocalStorage
+              const canvasElements = elements.filter(el => el.type !== "background").map(el => ({
+                id: el.id,
+                type: el.type === "shape" ? "rectangle" : el.type,
+                name: el.label || el.type,
+                x: el.position.x,
+                y: el.position.y,
+                width: el.position.width,
+                height: el.position.height,
+                rotation: 0,
+                scaleX: 1,
+                scaleY: 1,
+                fill: el.shapeStyle?.backgroundColor || el.textStyle?.color || (el.type === "image" ? "#e5e7eb" : "transparent"),
+                opacity: 1,
+                text: el.content,
+                fontSize: el.textStyle?.fontSize,
+                fontWeight: el.textStyle?.fontWeight,
+                textAlign: el.textStyle?.textAlign,
+                fontFamily: "Arial",
+                isLocked: false,
+                isHidden: false,
+              }));
+
+              const bgElement = elements.find(el => el.type === "background");
+              const bgColor = bgElement?.shapeStyle?.backgroundColor || "#ffffff";
+
+              const canvasState = {
+                elements: canvasElements,
+                selectedIds: [],
+                canvasWidth: activeLayout.canvasWidth,
+                canvasHeight: activeLayout.canvasHeight,
+                canvasBg: bgColor,
+                zoom: 1,
+                panX: 0,
+                panY: 0,
+                activeTool: "select",
+                gridOverlay: gridConfig // Extended for canvas implementation to draw guides
+              };
+
+              localStorage.setItem('dk_canvas_save', JSON.stringify(canvasState));
+              router.push("/canvas");
+            }}
             className="w-full flex justify-center items-center gap-2 rounded-xl bg-indigo-500 px-4 py-3 font-bold text-white transition-colors hover:bg-indigo-400"
           >
             <Icon name="corner" className="h-4 w-4" /> Send to Canvas

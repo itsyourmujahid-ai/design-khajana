@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { Icon } from "@/components/ui/icon";
 import { cn } from "@/lib/utils";
 import { inspectDesign, DesignData } from "./engine";
 import { analyzeImage } from "./imageAnalyzer";
 
 export function InspectorDashboard({ activeTool }: { activeTool?: string }) {
+  const router = useRouter();
   const [data, setData] = useState<DesignData>({
     width: 1920,
     height: 1080,
@@ -246,7 +248,38 @@ export function InspectorDashboard({ activeTool }: { activeTool?: string }) {
           <div className="mt-4 pt-4 border-t border-white/5 shrink-0">
             <button
               className="w-full flex items-center justify-center gap-2 rounded-xl bg-indigo-500 px-6 py-4 font-medium text-zinc-950 transition-colors hover:bg-indigo-400"
-              onClick={() => alert(`Opening canvas with inspected dimensions!`)}
+              onClick={() => {
+                const canvasState = {
+                  elements: previewUrl ? [
+                    {
+                      id: "insp-img-1",
+                      type: "image",
+                      name: "Inspected Image",
+                      x: 0,
+                      y: 0,
+                      width: data.width,
+                      height: data.height,
+                      rotation: 0,
+                      scaleX: 1,
+                      scaleY: 1,
+                      opacity: 1,
+                      src: previewUrl,
+                      isLocked: false,
+                      isHidden: false,
+                    }
+                  ] : [],
+                  selectedIds: [],
+                  canvasWidth: data.width,
+                  canvasHeight: data.height,
+                  canvasBg: "#ffffff",
+                  zoom: 1,
+                  panX: 0,
+                  panY: 0,
+                  activeTool: "select",
+                };
+                localStorage.setItem('dk_canvas_save', JSON.stringify(canvasState));
+                router.push("/canvas");
+              }}
             >
               <Icon name="corner" className="h-5 w-5" />
               Open in Canvas
