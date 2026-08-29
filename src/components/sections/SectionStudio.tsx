@@ -11,6 +11,7 @@ import { DesignSizeLayoutStudio } from "@/components/design-size-layout/DesignSi
 import { PrintStudio } from "@/components/print-studio/PrintStudio";
 import { InspectorStudio } from "@/components/inspector/InspectorStudio";
 import { DesignDoctorStudio } from "@/components/design-doctor/DesignDoctorStudio";
+import { GridKhajanaStudio } from "@/components/grid-khajana/GridKhajanaStudio";
 import { ToolCard } from "@/components/sections/ToolCard";
 import { ComingSoonModal } from "@/components/ui/ComingSoonModal";
 import { Icon } from "@/components/ui/icon";
@@ -46,6 +47,9 @@ export function SectionStudio({ section }: { section: Section }) {
   }
   if (section.slug === "design-doctor") {
     return <DesignDoctorStudio section={section} />;
+  }
+  if (section.slug === "grid-khajana") {
+    return <GridKhajanaStudio section={section} />;
   }
 
   return (
