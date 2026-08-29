@@ -186,3 +186,17 @@ body {
     animation-delay: 0ms !important;
   }
 }
+/* Theme overrides for Brand */
+.logo-d {
+  fill: #111111;
+}
+html.dark .logo-d {
+  fill: #FFFFFF;
+}
+
+.brand-text {
+  color: #18181b; /* zinc-900 */
+}
+html.dark .brand-text {
+  color: #FFFFFF;
+}

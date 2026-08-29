@@ -5,21 +5,10 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { Icon } from "@/components/ui/icon";
+import { Brand } from "@/components/layout/Brand";
+import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { navItems, sections, studioCount, totalTools } from "@/lib/catalog";
 import { cn } from "@/lib/utils";
-
-function Brand() {
-  return (
-    <Link href="/" className="group flex items-center gap-3">
-      <span className="relative grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-amber-400 to-yellow-600 shadow-lg shadow-amber-500/25 transition-transform duration-300 group-hover:scale-105">
-        <Icon name="gem" className="h-5 w-5 text-zinc-950" />
-      </span>
-      <span className="font-display text-[17px] font-bold leading-none text-white">
-        Design <span className="text-gradient">Khajana</span>
-      </span>
-    </Link>
-  );
-}
 
 function NavList({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
@@ -168,6 +157,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             </div>
 
             <div className="ml-auto flex items-center gap-2.5">
+              <ThemeToggle />
               <div
                 className="hidden items-center gap-2.5 rounded-xl border border-white/[0.08] bg-white/[0.03] px-3.5 py-2 text-sm text-zinc-500 md:flex"
                 title="Tool search is coming soon"
