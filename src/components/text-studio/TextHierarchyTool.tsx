@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Icon } from "@/components/ui/icon";
-import { getRecommendedHeading, getRecommendedSubheading, getRecommendedCTA, analyzeTextLength } from "./utils";
+import { getRecommendedHeading, getRecommendedSubheading, getRecommendedBody, getRecommendedCTA, analyzeTextLength } from "./utils";
 
 export function TextHierarchyTool({ focus = "All" }: { focus?: string }) {
   const [input, setInput] = useState("");
@@ -10,6 +10,7 @@ export function TextHierarchyTool({ focus = "All" }: { focus?: string }) {
 
   const heading = getRecommendedHeading(input);
   const subheading = getRecommendedSubheading(input);
+  const body = getRecommendedBody(input);
   const cta = getRecommendedCTA(input);
   const { wordCount, charCount, readingTime } = analyzeTextLength(input);
 
@@ -89,10 +90,10 @@ export function TextHierarchyTool({ focus = "All" }: { focus?: string }) {
             <div className="group relative mt-2">
               <div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-orange-400">Body Copy</div>
               <p className="text-sm leading-relaxed text-zinc-300">
-                {input || "Your full body copy will appear here, maintaining the original structure but properly formatted for readability."}
+                {body}
               </p>
               <button
-                onClick={() => copyToClipboard(input, "body")}
+                onClick={() => copyToClipboard(body, "body")}
                 className="absolute right-0 top-0 opacity-0 transition-opacity group-hover:opacity-100 rounded-md bg-white/10 p-1.5 text-zinc-300 hover:bg-white/20 hover:text-white"
                 title="Copy Body"
               >
