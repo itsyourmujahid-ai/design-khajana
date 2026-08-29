@@ -23,12 +23,12 @@ export function Brand() {
             fontSize="280"
             letterSpacing="-25"
           >
-            <tspan className="fill-[#111111] dark:fill-white transition-colors duration-300">d</tspan>
+            <tspan className="logo-d transition-colors duration-300">d</tspan>
             <tspan fill="#F2A900">K</tspan>
           </text>
         </svg>
       </div>
-      <span className="font-display text-[17px] font-bold leading-none text-zinc-900 dark:text-white transition-colors duration-300">
+      <span className="brand-text font-display text-[17px] font-bold leading-none transition-colors duration-300">
         Design <span className="text-gradient">Khajana</span>
       </span>
     </Link>

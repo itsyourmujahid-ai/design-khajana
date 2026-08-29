@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 
 import { Icon } from "@/components/ui/icon";
 import { Brand } from "@/components/layout/Brand";
+import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { navItems, sections, studioCount, totalTools } from "@/lib/catalog";
 import { cn } from "@/lib/utils";
 
@@ -156,6 +157,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             </div>
 
             <div className="ml-auto flex items-center gap-2.5">
+              <ThemeToggle />
               <div
                 className="hidden items-center gap-2.5 rounded-xl border border-white/[0.08] bg-white/[0.03] px-3.5 py-2 text-sm text-zinc-500 md:flex"
                 title="Tool search is coming soon"
