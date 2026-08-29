@@ -6,9 +6,12 @@ export function useCanvasStore() {
   const [state, setState] = useState<CanvasState>({
     elements: [],
     selectedIds: [],
+    guides: [],
     canvasWidth: 1080,
     canvasHeight: 1080,
     canvasBg: "#ffffff",
+    showGuides: true,
+    lockGuides: false,
     zoom: 1,
     panX: 0,
     panY: 0,
@@ -98,6 +101,27 @@ export function useCanvasStore() {
     }, recordHistory);
   };
 
+  const addGuide = (orientation: 'horizontal' | 'vertical', position: number) => {
+    updateState((s) => ({
+      ...s,
+      guides: [...(s.guides || []), { id: uuidv4(), orientation, position }]
+    }));
+  };
+
+  const updateGuide = (id: string, position: number) => {
+    updateState((s) => ({
+      ...s,
+      guides: (s.guides || []).map(g => g.id === id ? { ...g, position } : g)
+    }), false); // updating guides while dragging shouldn't spam history
+  };
+
+  const removeGuide = (id: string) => {
+    updateState((s) => ({
+      ...s,
+      guides: (s.guides || []).filter(g => g.id !== id)
+    }));
+  };
+
   const deleteSelected = () => {
     updateState((s) => ({
       ...s,
@@ -120,6 +144,14 @@ export function useCanvasStore() {
 
   const setCanvasBg = (bg: string) => {
     updateState((s) => ({ ...s, canvasBg: bg }));
+  };
+
+  const toggleGuides = () => {
+    updateState((s) => ({ ...s, showGuides: !s.showGuides }), false);
+  };
+
+  const toggleLockGuides = () => {
+    updateState((s) => ({ ...s, lockGuides: !s.lockGuides }), false);
   };
 
   const reorderElement = (id: string, dir: "up" | "down" | "top" | "bottom") => {
@@ -155,6 +187,11 @@ export function useCanvasStore() {
     setCanvasSize,
     setCanvasBg,
     reorderElement,
+    addGuide,
+    updateGuide,
+    removeGuide,
+    toggleGuides,
+    toggleLockGuides,
     // Hack to enable dragging without flooding history
     startTransientUpdate: () => { skipHistoryRef.current = true; },
     commitTransientUpdate: () => {

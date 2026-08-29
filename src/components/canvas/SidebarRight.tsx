@@ -87,13 +87,97 @@ export function SidebarRight({ store }: { store: any  , stageRef: any   }) {
             )}
 
             {el.type === 'text' && (
-              <div>
-                <label className="text-[10px] uppercase text-zinc-500 mb-1 block">Text</label>
-                <textarea
-                  value={el.text}
-                  onChange={(e) => store.updateElement(el.id, { text: e.target.value })}
-                  className="w-full bg-black/40 border border-white/10 rounded px-2 py-1 text-sm text-zinc-300 resize-y min-h-[60px]"
-                />
+              <div className="space-y-4 pt-2 border-t border-white/10">
+                <div>
+                  <label className="text-[10px] uppercase text-zinc-500 mb-1 block">Text Content</label>
+                  <textarea
+                    value={el.text}
+                    onChange={(e) => store.updateElement(el.id, { text: e.target.value })}
+                    className="w-full bg-black/40 border border-white/10 rounded px-2 py-1 text-sm text-zinc-300 resize-y min-h-[60px]"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-[10px] uppercase text-zinc-500 mb-1 block">Font</label>
+                    <select
+                      value={el.fontFamily || "Arial"}
+                      onChange={(e) => store.updateElement(el.id, { fontFamily: e.target.value })}
+                      className="w-full bg-black/40 border border-white/10 rounded px-2 py-1 text-sm text-zinc-300"
+                    >
+                      <option value="Arial">Arial</option>
+                      <option value="Inter">Inter</option>
+                      <option value="Times New Roman">Times New Roman</option>
+                      <option value="Courier New">Courier</option>
+                      <option value="Georgia">Georgia</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[10px] uppercase text-zinc-500 mb-1 block">Size</label>
+                    <input
+                      type="number"
+                      value={el.fontSize || 24}
+                      onChange={(e) => store.updateElement(el.id, { fontSize: Number(e.target.value) })}
+                      className="w-full bg-black/40 border border-white/10 rounded px-2 py-1 text-sm text-zinc-300"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-[10px] uppercase text-zinc-500 mb-1 block">Weight</label>
+                    <select
+                      value={el.fontWeight || "normal"}
+                      onChange={(e) => store.updateElement(el.id, { fontWeight: e.target.value })}
+                      className="w-full bg-black/40 border border-white/10 rounded px-2 py-1 text-sm text-zinc-300"
+                    >
+                      <option value="normal">Normal</option>
+                      <option value="bold">Bold</option>
+                      <option value="italic">Italic</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[10px] uppercase text-zinc-500 mb-1 block">Align</label>
+                    <div className="flex bg-black/40 border border-white/10 rounded overflow-hidden">
+                      {['left', 'center', 'right'].map((align) => (
+                        <button
+                          key={align}
+                          onClick={() => store.updateElement(el.id, { textAlign: align as any })}
+                          className={cn(
+                            "flex-1 py-1 px-2 flex justify-center items-center",
+                            (el.textAlign || 'left') === align ? "bg-indigo-500/20 text-indigo-300" : "text-zinc-500 hover:text-zinc-300 hover:bg-white/5"
+                          )}
+                          title={`Align ${align}`}
+                        >
+                          <Icon name={align === 'center' ? 'scan' : align === 'right' ? 'layout' : 'align'} className="w-4 h-4" />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-[10px] uppercase text-zinc-500 mb-1 block">Line Height</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      value={el.lineHeight || 1.2}
+                      onChange={(e) => store.updateElement(el.id, { lineHeight: Number(e.target.value) })}
+                      className="w-full bg-black/40 border border-white/10 rounded px-2 py-1 text-sm text-zinc-300"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] uppercase text-zinc-500 mb-1 block">Spacing</label>
+                    <input
+                      type="number"
+                      step="1"
+                      value={el.letterSpacing || 0}
+                      onChange={(e) => store.updateElement(el.id, { letterSpacing: Number(e.target.value) })}
+                      className="w-full bg-black/40 border border-white/10 rounded px-2 py-1 text-sm text-zinc-300"
+                    />
+                  </div>
+                </div>
               </div>
             )}
 

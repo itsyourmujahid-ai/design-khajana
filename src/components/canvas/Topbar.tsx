@@ -45,6 +45,21 @@ export function Topbar({ store }: { store: any   }) {
         >
           <Icon name="corner" className="h-4 w-4" />
         </button>
+        <div className="h-4 w-px bg-white/10 mx-2" />
+        <button
+          onClick={() => store.toggleGuides()}
+          className={`p-1.5 rounded text-xs font-medium ${state.showGuides ? 'bg-indigo-500/20 text-indigo-400' : 'text-zinc-400 hover:bg-white/10 hover:text-white'}`}
+          title="Toggle Guides"
+        >
+          Guides
+        </button>
+        <button
+          onClick={() => store.toggleLockGuides()}
+          className={`p-1.5 rounded text-xs font-medium ${state.lockGuides ? 'bg-indigo-500/20 text-indigo-400' : 'text-zinc-400 hover:bg-white/10 hover:text-white'}`}
+          title="Lock Guides"
+        >
+          Lock
+        </button>
       </div>
 
       <div className="flex items-center gap-3">

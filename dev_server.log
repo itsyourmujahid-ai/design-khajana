@@ -1,0 +1,50 @@
+
+> design-khajana@0.1.0 dev
+> next dev
+
+⚠ Port 3000 is in use by an unknown process, using available port 3003 instead.
+▲ Next.js 16.3.3 (Turbopack)
+- Local:         http://localhost:3003
+- Network:       http://192.168.0.2:3003
+✓ Ready in 661ms
+✓ Running next.config.ts took 47ms
+
+○ Compiling /canvas ...
+ GET /canvas 200 in 5.4s (next.js: 4.4s, application-code: 965ms)
+ GET /canvas 200 in 93ms (next.js: 10ms, application-code: 83ms)
+ GET /canvas 200 in 74ms (next.js: 4ms, application-code: 70ms)
+ GET /canvas 200 in 31ms (next.js: 14ms, application-code: 17ms)
+ GET /canvas 200 in 44ms (next.js: 9ms, application-code: 35ms)
+ GET /canvas 200 in 13ms (next.js: 6ms, application-code: 7ms)
+ GET /canvas 200 in 13ms (next.js: 6ms, application-code: 7ms)
+ GET /canvas 200 in 66ms (next.js: 4ms, application-code: 62ms)
+ GET /canvas 200 in 39ms (next.js: 6ms, application-code: 33ms)
+ GET /canvas 200 in 20ms (next.js: 8ms, application-code: 12ms)
+ GET /canvas 200 in 58ms (next.js: 5ms, application-code: 53ms)
+ GET /canvas 200 in 69ms (next.js: 5ms, application-code: 64ms)
+ GET /canvas 200 in 12ms (next.js: 4ms, application-code: 8ms)
+ GET /canvas 200 in 33ms (next.js: 4ms, application-code: 30ms)
+ GET /canvas 200 in 16ms (next.js: 7ms, application-code: 9ms)
+ GET /canvas 200 in 14ms (next.js: 6ms, application-code: 9ms)
+ GET /canvas 200 in 73ms (next.js: 5ms, application-code: 68ms)
+ GET /canvas 200 in 33ms (next.js: 5ms, application-code: 28ms)
+ GET /canvas 200 in 13ms (next.js: 6ms, application-code: 7ms)
+ GET /canvas 200 in 40ms (next.js: 6ms, application-code: 35ms)
+ GET /canvas 200 in 86ms (next.js: 7ms, application-code: 79ms)
+ GET /canvas 200 in 12ms (next.js: 4ms, application-code: 8ms)
+ GET /canvas 200 in 32ms (next.js: 4ms, application-code: 28ms)
+ GET /canvas 200 in 11ms (next.js: 5ms, application-code: 7ms)
+ GET /canvas 200 in 11ms (next.js: 5ms, application-code: 6ms)
+ GET /canvas 200 in 76ms (next.js: 7ms, application-code: 69ms)
+ GET /canvas 200 in 38ms (next.js: 5ms, application-code: 33ms)
+ GET /canvas 200 in 13ms (next.js: 5ms, application-code: 8ms)
+ GET /canvas 200 in 29ms (next.js: 5ms, application-code: 24ms)
+ GET /canvas 200 in 588ms (next.js: 137ms, application-code: 452ms)
+ GET /canvas 200 in 49ms (next.js: 12ms, application-code: 37ms)
+ GET /canvas 200 in 41ms (next.js: 7ms, application-code: 34ms)
+ GET /canvas 200 in 13ms (next.js: 4ms, application-code: 9ms)
+ GET /canvas 200 in 16ms (next.js: 6ms, application-code: 10ms)
+ GET /canvas 200 in 80ms (next.js: 4ms, application-code: 75ms)
+ GET /canvas 200 in 49ms (next.js: 4ms, application-code: 45ms)
+ GET /canvas 200 in 162ms (next.js: 79ms, application-code: 84ms)
+ GET /canvas 200 in 147ms (next.js: 28ms, application-code: 119ms)

@@ -59,12 +59,21 @@ export interface CanvasElement {
   isHidden: boolean;
 }
 
+export interface Guide {
+  id: string;
+  orientation: 'horizontal' | 'vertical';
+  position: number;
+}
+
 export interface CanvasState {
   elements: CanvasElement[];
   selectedIds: string[];
+  guides: Guide[];
   canvasWidth: number;
   canvasHeight: number;
   canvasBg: string;
+  showGuides: boolean;
+  lockGuides: boolean;
 
   // Viewport
   zoom: number;

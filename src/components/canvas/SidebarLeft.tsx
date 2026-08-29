@@ -25,9 +25,6 @@ export function SidebarLeft({ store }: { store: any   }) {
     } else if (tool === "ellipse") {
       addElement({ type: "ellipse", name: "Ellipse", x: 200, y: 200, width: 150, height: 150, fill: "#ef4444", rotation: 0, scaleX: 1, scaleY: 1, opacity: 1, isLocked: false, isHidden: false });
       setTool("select");
-    } else if (tool === "text") {
-      addElement({ type: "text", name: "Text", text: "Double click to edit", x: 100, y: 300, fill: "#000000", fontSize: 48, fontFamily: "Arial", rotation: 0, scaleX: 1, scaleY: 1, opacity: 1, isLocked: false, isHidden: false });
-      setTool("select");
     } else if (tool === "image") {
       alert("Image upload placeholder. Will integrate with HTML5 file input.");
       setTool("select");
