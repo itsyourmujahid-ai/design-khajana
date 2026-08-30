@@ -372,3 +372,60 @@ https://nextjs.org/docs/messages/module-not-found
   25 |     return [];
   26 |   }
   27 | (src/components/grid-khajana/data.ts:24:13)
+ GET /grid-khajana 200 in 723ms (next.js: 104ms, generate-params: 185ms, application-code: 434ms)
+[browser] Error fetching grid references: {
+  code: [32m'PGRST205'[39m,
+  details: [1mnull[22m,
+  hint: [1mnull[22m,
+  message: [32m"Could not find the table 'public.grid_references' in the schema cache"[39m
+}
+    at fetchPredefinedLayouts (src/components/grid-khajana/data.ts:24:13)
+    at async loadData (src/components/grid-khajana/ReferenceLibrary.tsx:22:20)
+  22 |
+  23 |   if (error) {
+> 24 |     console.error("Error fetching grid references:", error);
+     |             ^
+  25 |     return [];
+  26 |   }
+  27 | (src/components/grid-khajana/data.ts:24:13)
+[browser] Error fetching grid references: {
+  code: [32m'PGRST205'[39m,
+  details: [1mnull[22m,
+  hint: [1mnull[22m,
+  message: [32m"Could not find the table 'public.grid_references' in the schema cache"[39m
+}
+    at fetchPredefinedLayouts (src/components/grid-khajana/data.ts:24:13)
+    at async loadData (src/components/grid-khajana/ReferenceLibrary.tsx:22:20)
+  22 |
+  23 |   if (error) {
+> 24 |     console.error("Error fetching grid references:", error);
+     |             ^
+  25 |     return [];
+  26 |   }
+  27 | (src/components/grid-khajana/data.ts:24:13)
+ GET /grid-khajana 200 in 197ms (next.js: 45ms, generate-params: 27ms, application-code: 125ms)
+[browser] Could not fetch grid references from Supabase. Falling back to local mock data. {
+  code: [32m'PGRST205'[39m,
+  details: [1mnull[22m,
+  hint: [1mnull[22m,
+  message: [32m"Could not find the table 'public.grid_references' in the schema cache"[39m
+} (src/components/grid-khajana/data.ts:24:13)
+[browser] Could not fetch grid references from Supabase. Falling back to local mock data. {
+  code: [32m'PGRST205'[39m,
+  details: [1mnull[22m,
+  hint: [1mnull[22m,
+  message: [32m"Could not find the table 'public.grid_references' in the schema cache"[39m
+} (src/components/grid-khajana/data.ts:24:13)
+ GET /grid-khajana 200 in 122ms (next.js: 14ms, generate-params: 26ms, application-code: 83ms)
+[browser] Could not fetch grid references from Supabase. Falling back to local mock data. {
+  code: [32m'PGRST205'[39m,
+  details: [1mnull[22m,
+  hint: [1mnull[22m,
+  message: [32m"Could not find the table 'public.grid_references' in the schema cache"[39m
+} (src/components/grid-khajana/data.ts:37:13)
+[browser] Could not fetch grid references from Supabase. Falling back to local mock data. {
+  code: [32m'PGRST205'[39m,
+  details: [1mnull[22m,
+  hint: [1mnull[22m,
+  message: [32m"Could not find the table 'public.grid_references' in the schema cache"[39m
+} (src/components/grid-khajana/data.ts:37:13)
