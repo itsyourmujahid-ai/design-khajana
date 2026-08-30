@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@imgly/background-removal": "^1.7.0",
+    "@supabase/supabase-js": "^2.112.4",
     "konva": "^10.3.2",
     "lucide": "^1.35.0",
     "lucide-react": "^1.35.0",

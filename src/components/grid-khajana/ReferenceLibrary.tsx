@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Icon } from "@/components/ui/icon";
-import { categories, predefinedLayouts } from "./data";
+import { categories, fetchPredefinedLayouts } from "./data";
 import { ReferenceLayout } from "./types";
 import { cn } from "@/lib/utils";
 
@@ -14,10 +14,21 @@ interface ReferenceLibraryProps {
 export function ReferenceLibrary({ onSelectLayout, onUploadCustom }: ReferenceLibraryProps) {
   const [activeCategory, setActiveCategory] = useState<string>("All");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [layouts, setLayouts] = useState<ReferenceLayout[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadData() {
+      const data = await fetchPredefinedLayouts();
+      setLayouts(data);
+      setIsLoading(false);
+    }
+    loadData();
+  }, []);
 
   const filteredLayouts = activeCategory === "All"
-    ? predefinedLayouts
-    : predefinedLayouts.filter(l => l.category === activeCategory);
+    ? layouts
+    : layouts.filter(l => l.category === activeCategory);
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -69,9 +80,15 @@ export function ReferenceLibrary({ onSelectLayout, onUploadCustom }: ReferenceLi
         ))}
       </div>
 
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {filteredLayouts.map(layout => (
-          <div key={layout.id} className="group relative flex flex-col rounded-2xl border border-white/10 bg-white/[0.02] overflow-hidden transition-all hover:border-fuchsia-500/30 hover:bg-white/[0.04]">
+      {isLoading ? (
+        <div className="flex justify-center items-center py-20 text-zinc-500">
+          <Icon name="refresh" className="h-6 w-6 animate-spin mr-2" />
+          Loading references...
+        </div>
+      ) : (
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {filteredLayouts.map(layout => (
+            <div key={layout.id} className="group relative flex flex-col rounded-2xl border border-white/10 bg-white/[0.02] overflow-hidden transition-all hover:border-fuchsia-500/30 hover:bg-white/[0.04]">
 
             <div className="relative aspect-[4/3] bg-black/40 border-b border-white/5 p-4 flex items-center justify-center">
               <div
@@ -124,11 +141,12 @@ export function ReferenceLibrary({ onSelectLayout, onUploadCustom }: ReferenceLi
                   <Icon name="layout" className="h-3.5 w-3.5" />
                   Use Grid
                 </button>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
