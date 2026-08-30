@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Icon } from "@/components/ui/icon";
 import { cn } from "@/lib/utils";
 import { ReferenceLibrary } from "./ReferenceLibrary";
-import { ReferenceLayout, GridConfig, LayoutElement } from "./types";
+import { ReferenceLayout, GridConfig } from "./types";
 
 export function GridWorkspace() {
   const router = useRouter();
@@ -13,14 +13,12 @@ export function GridWorkspace() {
   const [mode, setMode] = useState<"study" | "use" | null>(null);
 
   const [gridConfig, setGridConfig] = useState<GridConfig | null>(null);
-  const [elements, setElements] = useState<LayoutElement[]>([]);
   const [customImage, setCustomImage] = useState<string | null>(null);
 
   const handleSelectLayout = (layout: ReferenceLayout, selectedMode: "study" | "use") => {
     setActiveLayout(layout);
     setMode(selectedMode);
     setGridConfig(layout.gridConfig);
-    setElements(layout.elements);
     setCustomImage(null);
   };
 
@@ -34,6 +32,7 @@ export function GridWorkspace() {
         category: "Custom",
         canvasWidth: img.width,
         canvasHeight: img.height,
+        referenceImageUrl: url,
         gridConfig: {
           type: "column",
           columns: 12,
@@ -49,24 +48,13 @@ export function GridWorkspace() {
           alignment: "Unknown",
           style: "Custom",
           mainAlignment: "Adjust grid to match image",
-        },
-        elements: [
-          {
-            id: "bg",
-            type: "background",
-            position: { x: 0, y: 0, width: img.width, height: img.height },
-            shapeStyle: { backgroundColor: "#ffffff" },
-            isHidden: false,
-            isLocked: true,
-          }
-        ]
+        }
       };
 
       setCustomImage(url);
       setActiveLayout(layout);
       setMode("study");
       setGridConfig(layout.gridConfig);
-      setElements(layout.elements);
     };
     img.src = url;
   };
@@ -164,6 +152,46 @@ export function GridWorkspace() {
         <button
           onClick={() => {
             // Only send Grid Configuration to canvas, as specified in requirements
+            const guides = [];
+            if (gridConfig) {
+              // Convert grid to canvas guides
+              if (gridConfig.type === 'column') {
+                const totalWidth = activeLayout.canvasWidth - (gridConfig.margin * 2);
+                const colWidth = (totalWidth - (gridConfig.gutter * (gridConfig.columns - 1))) / gridConfig.columns;
+
+                for (let i = 0; i <= gridConfig.columns; i++) {
+                  const x = gridConfig.margin + (i * colWidth) + (i * gridConfig.gutter);
+                  guides.push({ id: `g-col-${i}-start`, orientation: 'vertical', position: x });
+                  if (i < gridConfig.columns) {
+                    guides.push({ id: `g-col-${i}-end`, orientation: 'vertical', position: x + colWidth });
+                  }
+                }
+              } else if (gridConfig.type === 'modular') {
+                const totalWidth = activeLayout.canvasWidth - (gridConfig.margin * 2);
+                const colWidth = (totalWidth - (gridConfig.gutter * (gridConfig.columns - 1))) / gridConfig.columns;
+
+                for (let i = 0; i <= gridConfig.columns; i++) {
+                  const x = gridConfig.margin + (i * colWidth) + (i * gridConfig.gutter);
+                  guides.push({ id: `g-mod-col-${i}-start`, orientation: 'vertical', position: x });
+                  if (i < gridConfig.columns) {
+                    guides.push({ id: `g-mod-col-${i}-end`, orientation: 'vertical', position: x + colWidth });
+                  }
+                }
+
+                if (gridConfig.rows) {
+                  const totalHeight = activeLayout.canvasHeight - (gridConfig.margin * 2);
+                  const rowHeight = (totalHeight - (gridConfig.gutter * (gridConfig.rows - 1))) / gridConfig.rows;
+                  for (let i = 0; i <= gridConfig.rows; i++) {
+                    const y = gridConfig.margin + (i * rowHeight) + (i * gridConfig.gutter);
+                    guides.push({ id: `g-mod-row-${i}-start`, orientation: 'horizontal', position: y });
+                    if (i < gridConfig.rows) {
+                      guides.push({ id: `g-mod-row-${i}-end`, orientation: 'horizontal', position: y + rowHeight });
+                    }
+                  }
+                }
+              }
+            }
+
             const canvasState = {
               elements: [],
               selectedIds: [],
@@ -172,12 +200,11 @@ export function GridWorkspace() {
               canvasBg: "#ffffff",
               showGuides: true,
               lockGuides: false,
-              guides: [],
+              guides: guides,
               zoom: 1,
               panX: 0,
               panY: 0,
               activeTool: "select",
-              gridOverlay: gridConfig // Extended for canvas implementation to draw guides
             };
 
             localStorage.setItem('dk_canvas_save', JSON.stringify(canvasState));
@@ -202,50 +229,13 @@ export function GridWorkspace() {
             transformOrigin: "center center"
           }}
         >
-          {/* Elements Layer */}
-          {elements.map(el => {
-            if (el.isHidden) return null;
-
-            const isBg = el.type === 'background';
-            const style: React.CSSProperties = {
-              position: 'absolute',
-              left: isBg ? 0 : `${(el.position.x / activeLayout.canvasWidth) * 100}%`,
-              top: isBg ? 0 : `${(el.position.y / activeLayout.canvasHeight) * 100}%`,
-              width: isBg ? '100%' : `${(el.position.width / activeLayout.canvasWidth) * 100}%`,
-              height: isBg ? '100%' : `${(el.position.height / activeLayout.canvasHeight) * 100}%`,
-              backgroundColor: el.shapeStyle?.backgroundColor || 'transparent',
-              borderRadius: el.shapeStyle?.borderRadius ? `${el.shapeStyle.borderRadius}px` : 0,
-              display: 'flex',
-              alignItems: el.type === 'text' ? 'flex-start' : 'center',
-              justifyContent: el.type === 'text' ? (el.textStyle?.textAlign === 'center' ? 'center' : el.textStyle?.textAlign === 'right' ? 'flex-end' : 'flex-start') : 'center',
-              overflow: 'hidden',
-              border: 'none',
-              cursor: 'default',
-            };
-
-            return (
-              <div key={el.id} style={style} className="z-0">
-                {el.type === 'text' && (
-                  <span style={{
-                    fontSize: `${(el.textStyle?.fontSize || 16) / 2}px`, // Scaled down roughly for preview
-                    fontWeight: el.textStyle?.fontWeight,
-                    color: el.textStyle?.color,
-                    lineHeight: el.textStyle?.lineHeight,
-                    textAlign: el.textStyle?.textAlign,
-                    letterSpacing: el.textStyle?.letterSpacing ? `${el.textStyle.letterSpacing}px` : 'normal',
-                    textTransform: el.textStyle?.textTransform,
-                    whiteSpace: "pre-wrap"
-                  }}>
-                    {el.content}
-                  </span>
-                )}
-              </div>
-            );
-          })}
-
-          {/* Custom Uploaded Image Layer */}
-          {customImage && (
-             <img src={customImage} alt="Custom Reference" className="absolute inset-0 w-full h-full object-contain opacity-80 z-20 pointer-events-none" />
+          {/* Reference Image */}
+          {activeLayout.referenceImageUrl && (
+            <img
+              src={activeLayout.referenceImageUrl}
+              alt="Design Reference"
+              className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none"
+            />
           )}
 
           {/* Grid Overlay Layer */}

@@ -84,26 +84,14 @@ export function ReferenceLibrary({ onSelectLayout, onUploadCustom }: ReferenceLi
                   maxWidth: '100%'
                 }}
               >
-                {/* Micro preview of layout elements */}
-                {layout.elements.map(el => (
-                  <div
-                    key={el.id}
-                    className="absolute"
-                    style={{
-                      left: `${(el.position.x / layout.canvasWidth) * 100}%`,
-                      top: `${(el.position.y / layout.canvasHeight) * 100}%`,
-                      width: `${(el.position.width / layout.canvasWidth) * 100}%`,
-                      height: `${(el.position.height / layout.canvasHeight) * 100}%`,
-                      backgroundColor: el.type === 'background' ? el.shapeStyle?.backgroundColor : (el.type === 'image' || el.type === 'shape' ? '#3f3f46' : 'transparent'),
-                      display: 'flex',
-                      flexDirection: 'column'
-                    }}
-                  >
-                    {el.type === 'text' && (
-                      <div className="w-full bg-zinc-600 mb-1" style={{ height: '30%' }} />
-                    )}
-                  </div>
-                ))}
+                {/* Reference Image */}
+                {layout.referenceImageUrl && (
+                  <img
+                    src={layout.referenceImageUrl}
+                    alt={layout.name}
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                )}
 
                 {/* Overlay Grid Preview */}
                 <div className="absolute inset-0 flex" style={{ padding: `${(layout.gridConfig.margin / Math.max(layout.canvasWidth, layout.canvasHeight)) * 100}%` }}>

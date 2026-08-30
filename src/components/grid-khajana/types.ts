@@ -77,6 +77,6 @@ export interface ReferenceLayout {
   canvasWidth: number;
   canvasHeight: number;
   gridConfig: GridConfig;
-  elements: LayoutElement[];
+  referenceImageUrl: string;
   analysis: LayoutAnalysis;
 }

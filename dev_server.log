@@ -51,3 +51,7 @@
 ○ Compiling /[section] ...
  GET /grid-khajana 200 in 12.0s (next.js: 9.1s, generate-params: 787ms, application-code: 2.1s)
  GET /canvas 200 in 36ms (next.js: 10ms, application-code: 26ms)
+ GET /grid-khajana 200 in 862ms (next.js: 149ms, generate-params: 91ms, application-code: 622ms)
+ GET /canvas 200 in 49ms (next.js: 8ms, application-code: 41ms)
+ GET /grid-khajana 200 in 168ms (next.js: 9ms, generate-params: 21ms, application-code: 138ms)
+ GET /canvas 200 in 41ms (next.js: 4ms, application-code: 37ms)
