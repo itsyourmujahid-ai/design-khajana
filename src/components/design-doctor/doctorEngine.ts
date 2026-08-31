@@ -194,7 +194,7 @@ export async function diagnoseDesign(file: File): Promise<Diagnosis> {
         mainDiagnosis,
         treatmentPlan,
         problems,
-        workingWell: [...new Set(workingWell)].slice(0, 4) // max 4 unique
+        workingWell: Array.from(new Set(workingWell)).slice(0, 4) // max 4 unique
       };
 
   } catch (e) {
