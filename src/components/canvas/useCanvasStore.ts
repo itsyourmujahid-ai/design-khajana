@@ -74,12 +74,20 @@ export function useCanvasStore() {
     updateState((s) => ({ ...s, activeTool: tool }), false); // don't log tool changes in history
   };
 
-  const addElement = (element: Omit<CanvasElement, "id">) => {
-    const newEl: CanvasElement = { ...element, id: uuidv4() };
+  const addElement = (element: Omit<CanvasElement, "id"> | CanvasElement) => {
+    const newEl: CanvasElement = { ...element, id: (element as CanvasElement).id || uuidv4() };
     updateState((s) => ({
       ...s,
       elements: [...s.elements, newEl],
       selectedIds: [newEl.id],
+    }));
+  };
+
+  const addElements = (elements: CanvasElement[]) => {
+    updateState((s) => ({
+      ...s,
+      elements: [...s.elements, ...elements],
+      selectedIds: elements.map((el) => el.id),
     }));
   };
 
@@ -171,6 +179,94 @@ export function useCanvasStore() {
     });
   };
 
+  const groupSelected = () => {
+    updateState((s) => {
+      if (s.selectedIds.length < 2) return s;
+
+      const newGroupId = uuidv4();
+      const groupedElements = s.elements.filter(el => s.selectedIds.includes(el.id));
+
+      // Calculate group bounding box
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+      groupedElements.forEach(el => {
+        if (el.x < minX) minX = el.x;
+        if (el.y < minY) minY = el.y;
+        if (el.x + (el.width || 0) > maxX) maxX = el.x + (el.width || 0);
+        if (el.y + (el.height || 0) > maxY) maxY = el.y + (el.height || 0);
+      });
+
+      const groupElement: CanvasElement = {
+        id: newGroupId,
+        type: "group",
+        name: "Group",
+        x: minX,
+        y: minY,
+        width: maxX - minX,
+        height: maxY - minY,
+        rotation: 0,
+        scaleX: 1,
+        scaleY: 1,
+        opacity: 1,
+        isLocked: false,
+        isHidden: false,
+        children: groupedElements.map(el => ({
+          ...el,
+          x: el.x - minX,
+          y: el.y - minY
+        }))
+      };
+
+      const remainingElements = s.elements.filter(el => !s.selectedIds.includes(el.id));
+
+      return {
+        ...s,
+        elements: [...remainingElements, groupElement],
+        selectedIds: [newGroupId]
+      };
+    });
+  };
+
+  const ungroupSelected = () => {
+    updateState((s) => {
+      if (s.selectedIds.length !== 1) return s;
+      const groupId = s.selectedIds[0];
+      const groupElement = s.elements.find(el => el.id === groupId);
+
+      if (!groupElement || groupElement.type !== "group" || !groupElement.children) return s;
+
+      const remainingElements = s.elements.filter(el => el.id !== groupId);
+      const restoredChildren = groupElement.children.map(child => {
+        // When ungrouping, we must apply the parent group's scale and rotation to the children's relative coordinates
+        const scaledX = child.x * (groupElement.scaleX || 1);
+        const scaledY = child.y * (groupElement.scaleY || 1);
+
+        // Apply rotation
+        const groupRotation = groupElement.rotation || 0;
+        const rad = (Math.PI / 180) * groupRotation;
+        const cosVal = Math.cos(rad);
+        const sinVal = Math.sin(rad);
+
+        const rotatedX = scaledX * cosVal - scaledY * sinVal;
+        const rotatedY = scaledX * sinVal + scaledY * cosVal;
+
+        return {
+          ...child,
+          x: groupElement.x + rotatedX,
+          y: groupElement.y + rotatedY,
+          scaleX: (child.scaleX || 1) * (groupElement.scaleX || 1),
+          scaleY: (child.scaleY || 1) * (groupElement.scaleY || 1),
+          rotation: (child.rotation || 0) + groupRotation
+        };
+      });
+
+      return {
+        ...s,
+        elements: [...remainingElements, ...restoredChildren],
+        selectedIds: restoredChildren.map(c => c.id)
+      };
+    });
+  };
+
   return {
     state,
     undo,
@@ -187,6 +283,8 @@ export function useCanvasStore() {
     setCanvasSize,
     setCanvasBg,
     reorderElement,
+    groupSelected,
+    ungroupSelected,
     addGuide,
     updateGuide,
     removeGuide,

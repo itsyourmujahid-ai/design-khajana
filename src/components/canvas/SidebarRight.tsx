@@ -38,8 +38,10 @@ export function SidebarRight({ store }: { store: any  , stageRef: any   }) {
 
                 {isSelected && (
                   <div className="flex items-center gap-1 shrink-0">
-                    <button onClick={(e) => { e.stopPropagation(); reorderElement(layer.id, "up"); }} className="hover:text-white p-0.5"><Icon name="arrowRight" className="w-3 h-3 -rotate-90" /></button>
-                    <button onClick={(e) => { e.stopPropagation(); reorderElement(layer.id, "down"); }} className="hover:text-white p-0.5"><Icon name="arrowRight" className="w-3 h-3 rotate-90" /></button>
+                    <button onClick={(e) => { e.stopPropagation(); reorderElement(layer.id, "top"); }} className="hover:text-white p-0.5" title="Bring to front"><Icon name="arrowRight" className="w-3 h-3 -rotate-90 text-indigo-400" /></button>
+                    <button onClick={(e) => { e.stopPropagation(); reorderElement(layer.id, "up"); }} className="hover:text-white p-0.5" title="Bring forward"><Icon name="arrowRight" className="w-3 h-3 -rotate-90" /></button>
+                    <button onClick={(e) => { e.stopPropagation(); reorderElement(layer.id, "down"); }} className="hover:text-white p-0.5" title="Send backward"><Icon name="arrowRight" className="w-3 h-3 rotate-90" /></button>
+                    <button onClick={(e) => { e.stopPropagation(); reorderElement(layer.id, "bottom"); }} className="hover:text-white p-0.5" title="Send to back"><Icon name="arrowRight" className="w-3 h-3 rotate-90 text-indigo-400" /></button>
                   </div>
                 )}
               </div>

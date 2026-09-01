@@ -30,6 +30,8 @@ function CanvasImage({ el, onSelect, onChange, isSelected }: any  ) {
   return (
     <>
       <KonvaImage
+        id={`el-${el.id}`}
+        name="element"
         onClick={onSelect}
         onTap={onSelect}
         ref={shapeRef}
@@ -43,11 +45,20 @@ function CanvasImage({ el, onSelect, onChange, isSelected }: any  ) {
         scaleY={el.scaleY}
         opacity={el.opacity}
         draggable={!el.isLocked && isSelected}
+        onDragMove={(e: any) => {
+          if (isSelected && e.target === shapeRef.current && el.onDragMove) {
+            el.onDragMove(e);
+          }
+        }}
         onDragEnd={(e: any  ) => {
-          onChange({
-            x: e.target.x(),
-            y: e.target.y(),
-          });
+          if (el.onDragEnd) {
+            el.onDragEnd(e);
+          } else {
+            onChange({
+              x: e.target.x(),
+              y: e.target.y(),
+            });
+          }
         }}
         onTransformEnd={() => {
           const node = shapeRef.current;
@@ -105,14 +116,23 @@ function EditableText({ el, onSelect, onChange, isSelected, store }: any  ) {
       scaleX={el.scaleX}
       scaleY={el.scaleY}
       draggable={!el.isLocked && isSelected && !isEditing}
+      onDragMove={(e: any) => {
+        if (isSelected && e.target === shapeRef.current && el.onDragMove) {
+          el.onDragMove(e);
+        }
+      }}
       onDragEnd={(e: any) => {
-        onChange({ x: e.target.x(), y: e.target.y() });
+        if (el.onDragEnd) {
+          el.onDragEnd(e);
+        } else {
+          onChange({ x: e.target.x(), y: e.target.y() });
+        }
       }}
     >
       {!isEditing && (
         <Text
           id={`el-${el.id}`}
-          className="element"
+          name="element"
           onClick={onSelect}
           onTap={onSelect}
           onDblClick={handleDoubleClick}
@@ -179,6 +199,8 @@ function ShapeElement({ el, onSelect, onChange, isSelected }: any  ) {
   }, [isSelected]);
 
   const commonProps = {
+    id: `el-${el.id}`,
+    name: "element",
     onClick: onSelect,
     onTap: onSelect,
     ref: shapeRef,
@@ -194,7 +216,18 @@ function ShapeElement({ el, onSelect, onChange, isSelected }: any  ) {
     scaleY: el.scaleY,
     opacity: el.opacity,
     draggable: !el.isLocked && isSelected,
-    onDragEnd: (e: any  ) => onChange({ x: e.target.x(), y: e.target.y() }),
+    onDragMove: (e: any) => {
+      if (isSelected && e.target === shapeRef.current && el.onDragMove) {
+        el.onDragMove(e);
+      }
+    },
+    onDragEnd: (e: any  ) => {
+      if (el.onDragEnd) {
+        el.onDragEnd(e);
+      } else {
+        onChange({ x: e.target.x(), y: e.target.y() });
+      }
+    },
     onTransformEnd: () => {
       const node = shapeRef.current;
       const scaleX = node.scaleX();
@@ -217,12 +250,6 @@ function ShapeElement({ el, onSelect, onChange, isSelected }: any  ) {
       {el.type === 'ellipse' && <Circle {...commonProps} radius={el.width! / 2} />}
       {el.type === 'line' && <Line {...commonProps} points={el.points || []} stroke={el.stroke?.color || "#000"} strokeWidth={el.stroke?.width || 2} />}
 
-      {isSelected && !el.isLocked && (
-        <Transformer ref={trRef} boundBoxFunc={(oldBox, newBox) => {
-          if (newBox.width < 5 || newBox.height < 5) return oldBox;
-          return newBox;
-        }} />
-      )}
     </>
   );
 }
@@ -436,9 +463,107 @@ export function CanvasWorkspace() {
                   }
                 };
 
-                if (el.type === 'image') return <CanvasImage key={el.id} el={el} isSelected={isSelected} onSelect={onSelect} onChange={onChange} />;
-                if (el.type === 'text') return <EditableText key={el.id} el={el} isSelected={isSelected} onSelect={onSelect} onChange={onChange} store={store} />;
-                return <ShapeElement key={el.id} el={el} isSelected={isSelected} onSelect={onSelect} onChange={onChange} />;
+                // Create a unified onDragMove handler for multi-select synchronization
+                const handleDragMove = (e: any) => {
+                  if (!isSelected || store.state.selectedIds.length <= 1) return;
+
+                  // Compute delta from original element position to current drag position
+                  const dx = e.target.x() - el.x;
+                  const dy = e.target.y() - el.y;
+
+                  // Apply this delta directly to all other selected shape nodes visually
+                  // so they follow the primary dragged node seamlessly during drag.
+                  const stage = stageRef.current;
+                  if (stage) {
+                    store.state.selectedIds.forEach((id: string) => {
+                      if (id === el.id) return; // Skip self
+                      const node = stage.findOne(`#el-${id}`);
+                      if (node) {
+                        const originalEl = store.state.elements.find(e => e.id === id);
+                        if (originalEl) {
+                          node.x(originalEl.x + dx);
+                          node.y(originalEl.y + dy);
+                        }
+                      }
+                    });
+                  }
+                };
+
+                // Wrap the original onChange dragEnd to also apply the batched visual deltas to the state store
+                const handleDragEnd = (e: any) => {
+                  if (isSelected && store.state.selectedIds.length > 1) {
+                    const dx = e.target.x() - el.x;
+                    const dy = e.target.y() - el.y;
+
+                    const updates = store.state.selectedIds.reduce((acc: any[], id: string) => {
+                      const originalEl = store.state.elements.find(e => e.id === id);
+                      if (originalEl) {
+                        acc.push({ id, updates: { x: originalEl.x + dx, y: originalEl.y + dy } });
+                      }
+                      return acc;
+                    }, []);
+
+                    // We must fire updateElements here.
+                    // We bypass the standard onChange which only updates 'el'.
+                    store.updateElements(updates, true);
+                  } else {
+                    onChange({ x: e.target.x(), y: e.target.y() });
+                  }
+                };
+
+                // For Text/Image/Shape, we need to pass these new multi-drag handlers,
+                // but the existing components might not expose onDragMove props.
+                // It is better to rely on Transformer's unified dragging if attached, or Konva groups.
+                // However, since we render them flat, we pass down standard props.
+                // To avoid rewriting `CanvasImage`, `EditableText`, `ShapeElement`, we can inject the drag end logic:
+                const elWithHandlers = {
+                  ...el,
+                  onDragMove: handleDragMove,
+                  onDragEnd: handleDragEnd
+                };
+
+                if (el.type === 'image') return <CanvasImage key={el.id} el={elWithHandlers} isSelected={isSelected} onSelect={onSelect} onChange={onChange} />;
+                if (el.type === 'text') return <EditableText key={el.id} el={elWithHandlers} isSelected={isSelected} onSelect={onSelect} onChange={onChange} store={store} />;
+
+                // Group element mapping
+                if (el.type === 'group') {
+                  return (
+                    <Group
+                      key={el.id}
+                      id={`el-${el.id}`}
+                      name="element"
+                      x={el.x} y={el.y}
+                      rotation={el.rotation}
+                      scaleX={el.scaleX}
+                      scaleY={el.scaleY}
+                      draggable={!el.isLocked && isSelected}
+                      onClick={onSelect}
+                      onTap={onSelect}
+                      onDragMove={elWithHandlers.onDragMove}
+                      onDragEnd={elWithHandlers.onDragEnd}
+                      onTransformEnd={() => {
+                        const node = stageRef.current.findOne(`#el-${el.id}`);
+                        if (node) {
+                          onChange({
+                            x: node.x(),
+                            y: node.y(),
+                            scaleX: node.scaleX(),
+                            scaleY: node.scaleY(),
+                            rotation: node.rotation(),
+                          });
+                        }
+                      }}
+                    >
+                      {el.children?.map((child: any) => {
+                         if (child.type === 'image') return <CanvasImage key={child.id} el={child} isSelected={false} onSelect={() => {}} onChange={() => {}} />;
+                         if (child.type === 'text') return <EditableText key={child.id} el={child} isSelected={false} onSelect={() => {}} onChange={() => {}} store={store} />;
+                         return <ShapeElement key={child.id} el={child} isSelected={false} onSelect={() => {}} onChange={() => {}} />;
+                      })}
+                    </Group>
+                  );
+                }
+
+                return <ShapeElement key={el.id} el={elWithHandlers} isSelected={isSelected} onSelect={onSelect} onChange={onChange} />;
               })}
 
               {isDrawing && currentLine.length > 0 && (

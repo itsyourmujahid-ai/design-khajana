@@ -1,4 +1,4 @@
-export type ElementType = "rectangle" | "ellipse" | "text" | "image" | "path" | "polygon" | "line";
+export type ElementType = "rectangle" | "ellipse" | "text" | "image" | "path" | "polygon" | "line" | "group";
 export type ToolType = "select" | "hand" | "node" | "pen" | "pencil" | "rectangle" | "ellipse" | "text" | "image" | "line";
 
 export interface Position {
@@ -53,6 +53,10 @@ export interface CanvasElement {
 
   // Image Specific
   src?: string; // base64 or objectURL
+
+  // Group Specific
+  groupId?: string; // if child of a group
+  children?: CanvasElement[]; // if is a group itself
 
   // State
   isLocked: boolean;

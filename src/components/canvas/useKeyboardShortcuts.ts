@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
-export function useKeyboardShortcuts(store: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) {
+export function useKeyboardShortcuts(store: any /* eslint-disable-line @typescript-eslint/no-explicit-any */ /* eslint-disable-line @typescript-eslint/no-explicit-any */) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Don't trigger shortcuts if typing in an input/textarea
@@ -20,6 +20,24 @@ export function useKeyboardShortcuts(store: any /* eslint-disable-line @typescri
         }
       }
 
+      // Keyboard Movement
+      if (store.state.selectedIds.length > 0 && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+        e.preventDefault();
+        const step = e.shiftKey ? 10 : 1;
+        const updates = store.state.elements
+          .filter((el: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => store.state.selectedIds.includes(el.id))
+          .map((el: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => {
+            let dx = 0;
+            let dy = 0;
+            if (e.key === 'ArrowUp') dy = -step;
+            if (e.key === 'ArrowDown') dy = step;
+            if (e.key === 'ArrowLeft') dx = -step;
+            if (e.key === 'ArrowRight') dx = step;
+            return { id: el.id, updates: { x: el.x + dx, y: el.y + dy } };
+          });
+        store.updateElements(updates);
+      }
+
       // Undo/Redo
       if (e.metaKey || e.ctrlKey) {
         if (e.key === 'z') {
@@ -33,7 +51,7 @@ export function useKeyboardShortcuts(store: any /* eslint-disable-line @typescri
 
         // Copy / Duplicate
         if (e.key === 'c') {
-          const selected = store.state.elements.filter((el: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => store.state.selectedIds.includes(el.id));
+          const selected = store.state.elements.filter((el: any /* eslint-disable-line @typescript-eslint/no-explicit-any */ /* eslint-disable-line @typescript-eslint/no-explicit-any */) => store.state.selectedIds.includes(el.id));
           if (selected.length > 0) {
             localStorage.setItem('dk_clipboard', JSON.stringify(selected));
           }
@@ -41,7 +59,7 @@ export function useKeyboardShortcuts(store: any /* eslint-disable-line @typescri
 
         // Cut
         if (e.key === 'x') {
-          const selected = store.state.elements.filter((el: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => store.state.selectedIds.includes(el.id));
+          const selected = store.state.elements.filter((el: any /* eslint-disable-line @typescript-eslint/no-explicit-any */ /* eslint-disable-line @typescript-eslint/no-explicit-any */) => store.state.selectedIds.includes(el.id));
           if (selected.length > 0) {
             localStorage.setItem('dk_clipboard', JSON.stringify(selected));
             store.deleteSelected();
@@ -54,14 +72,13 @@ export function useKeyboardShortcuts(store: any /* eslint-disable-line @typescri
             const clipStr = localStorage.getItem('dk_clipboard');
             if (clipStr) {
               const clipboard = JSON.parse(clipStr);
-              const newIds: string[] = [];
               // Duplicate and offset them slightly
-              clipboard.forEach((el: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => {
-                const newEl = { ...el, id: uuidv4(), x: el.x + 20, y: el.y + 20 };
-                store.addElement(newEl);
-                newIds.push(newEl.id);
+              const newElements = clipboard.map((el: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => {
+                const newId = uuidv4();
+                return { ...el, id: newId, x: el.x + 20, y: el.y + 20 };
               });
-              store.setSelected(newIds);
+
+              store.addElements(newElements);
             }
           } catch (e) {
             console.error(e);
@@ -73,20 +90,29 @@ export function useKeyboardShortcuts(store: any /* eslint-disable-line @typescri
           e.preventDefault();
           const selected = store.state.elements.filter((el: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => store.state.selectedIds.includes(el.id));
           if (selected.length > 0) {
-            const newIds: string[] = [];
-            selected.forEach((el: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => {
-              const newEl = { ...el, id: uuidv4(), x: el.x + 20, y: el.y + 20 };
-              store.addElement(newEl);
-              newIds.push(newEl.id);
+            const newElements = selected.map((el: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => {
+              const newId = uuidv4();
+              return { ...el, id: newId, x: el.x + 20, y: el.y + 20 };
             });
-            store.setSelected(newIds);
+
+            store.addElements(newElements);
           }
         }
 
         // Select All (Cmd+A)
         if (e.key === 'a') {
           e.preventDefault();
-          store.setSelected(store.state.elements.filter((el: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => !el.isLocked && !el.isHidden).map((el: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => el.id));
+          store.setSelected(store.state.elements.filter((el: any /* eslint-disable-line @typescript-eslint/no-explicit-any */ /* eslint-disable-line @typescript-eslint/no-explicit-any */) => !el.isLocked && !el.isHidden).map((el: any /* eslint-disable-line @typescript-eslint/no-explicit-any */ /* eslint-disable-line @typescript-eslint/no-explicit-any */) => el.id));
+        }
+
+        // Group (Cmd+G)
+        if (e.key === 'g') {
+          e.preventDefault();
+          if (e.shiftKey) {
+            store.ungroupSelected();
+          } else {
+            store.groupSelected();
+          }
         }
       }
 
