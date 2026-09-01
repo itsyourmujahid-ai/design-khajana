@@ -78,12 +78,57 @@ export function SidebarRight({ store }: { store: any  , stageRef: any   }) {
               </div>
             </div>
 
-            {el.type !== 'line' && el.type !== 'image' && (
+            {el.type !== 'image' && (
               <div>
                 <label className="text-[10px] uppercase text-zinc-500 mb-1 block">Fill</label>
                 <div className="flex items-center gap-2">
                   <input type="color" value={el.fill || "#000000"} onChange={(e) => store.updateElement(el.id, { fill: e.target.value })} className="w-8 h-8 rounded border-none bg-transparent cursor-pointer" />
                   <input type="text" value={el.fill || "#000000"} onChange={(e) => store.updateElement(el.id, { fill: e.target.value })} className="flex-1 bg-black/40 border border-white/10 rounded px-2 py-1 text-sm text-zinc-300 uppercase font-mono" />
+                </div>
+              </div>
+            )}
+
+            {el.type !== 'image' && el.type !== 'text' && (
+              <div className="space-y-4 pt-2 border-t border-white/10">
+                <div>
+                  <label className="text-[10px] uppercase text-zinc-500 mb-1 block">Stroke Color</label>
+                  <div className="flex items-center gap-2">
+                    <input type="color" value={el.stroke?.color || "#000000"} onChange={(e) => store.updateElement(el.id, { stroke: { ...el.stroke, color: e.target.value, width: el.stroke?.width || 2 } })} className="w-8 h-8 rounded border-none bg-transparent cursor-pointer" />
+                    <input type="text" value={el.stroke?.color || "#000000"} onChange={(e) => store.updateElement(el.id, { stroke: { ...el.stroke, color: e.target.value, width: el.stroke?.width || 2 } })} className="flex-1 bg-black/40 border border-white/10 rounded px-2 py-1 text-sm text-zinc-300 uppercase font-mono" />
+                  </div>
+                </div>
+                <div>
+                  <label className="text-[10px] uppercase text-zinc-500 mb-1 block">Stroke Width</label>
+                  <input type="range" min="0" max="20" step="1" value={el.stroke?.width || 0} onChange={(e) => store.updateElement(el.id, { stroke: { ...el.stroke, color: el.stroke?.color || "#000", width: Number(e.target.value) } })} className="w-full" />
+                </div>
+              </div>
+            )}
+
+            {el.type === 'rectangle' && (
+              <div className="space-y-4 pt-2 border-t border-white/10">
+                <div>
+                  <label className="text-[10px] uppercase text-zinc-500 mb-1 block">Corner Radius</label>
+                  <input type="range" min="0" max="100" step="1" value={el.cornerRadius || 0} onChange={(e) => store.updateElement(el.id, { cornerRadius: Number(e.target.value) })} className="w-full" />
+                </div>
+              </div>
+            )}
+            {el.type === 'polygon' && (
+              <div className="space-y-4 pt-2 border-t border-white/10">
+                <div>
+                  <label className="text-[10px] uppercase text-zinc-500 mb-1 block">Sides</label>
+                  <input type="range" min="3" max="12" step="1" value={el.sides || 6} onChange={(e) => store.updateElement(el.id, { sides: Number(e.target.value) })} className="w-full" />
+                </div>
+              </div>
+            )}
+            {el.type === 'star' && (
+              <div className="space-y-4 pt-2 border-t border-white/10">
+                <div>
+                  <label className="text-[10px] uppercase text-zinc-500 mb-1 block">Points</label>
+                  <input type="range" min="3" max="20" step="1" value={el.numPoints || 5} onChange={(e) => store.updateElement(el.id, { numPoints: Number(e.target.value) })} className="w-full" />
+                </div>
+                <div>
+                  <label className="text-[10px] uppercase text-zinc-500 mb-1 block">Inner Radius</label>
+                  <input type="range" min="5" max="200" step="1" value={el.innerRadius || 37.5} onChange={(e) => store.updateElement(el.id, { innerRadius: Number(e.target.value) })} className="w-full" />
                 </div>
               </div>
             )}

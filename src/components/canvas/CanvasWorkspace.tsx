@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Stage, Layer, Rect, Circle, Text, Line, Transformer, Image as KonvaImage, Group } from "react-konva";
+import { Stage, Layer, Rect, Circle, Text, Line, Transformer, Image as KonvaImage, Group, RegularPolygon, Star, Path } from "react-konva";
 import { Html } from "react-konva-utils";
 import useImage from "use-image";
 import { useCanvasStore } from "./useCanvasStore";
@@ -246,9 +246,11 @@ function ShapeElement({ el, onSelect, onChange, isSelected }: any  ) {
 
   return (
     <>
-      {el.type === 'rectangle' && <Rect {...commonProps} />}
+      {el.type === 'rectangle' && <Rect {...commonProps} cornerRadius={el.cornerRadius || 0} />}
       {el.type === 'ellipse' && <Circle {...commonProps} radius={el.width! / 2} />}
-      {el.type === 'line' && <Line {...commonProps} points={el.points || []} stroke={el.stroke?.color || "#000"} strokeWidth={el.stroke?.width || 2} />}
+      {el.type === 'line' && <Line {...commonProps} points={el.points || []} stroke={el.stroke?.color || el.fill || "#000"} strokeWidth={el.stroke?.width || 2} closed={el.closed} />}
+      {el.type === 'polygon' && <RegularPolygon {...commonProps} sides={el.sides || 3} radius={el.width! / 2} />}
+      {el.type === 'star' && <Star {...commonProps} numPoints={el.numPoints || 5} innerRadius={el.innerRadius || el.width! / 4} outerRadius={el.outerRadius || el.width! / 2} />}
 
     </>
   );
@@ -267,6 +269,7 @@ export function CanvasWorkspace() {
 
   const [isDrawing, setIsDrawing] = useState(false);
   const [currentLine, setCurrentLine] = useState<number[]>([]);
+  const [previewLine, setPreviewLine] = useState<number[]>([]);
   const [selectionBox, setSelectionBox] = useState<{ x1: number, y1: number, x2: number, y2: number } | null>(null);
 
   // Keep the transformer synced with selected objects
@@ -345,10 +348,44 @@ export function CanvasWorkspace() {
       return;
     }
 
-    if (store.state.activeTool === 'pencil') {
+    if (store.state.activeTool === 'pencil' || store.state.activeTool === 'pen') {
       setIsDrawing(true);
       const pos = e.target.getStage().getRelativePointerPosition();
-      setCurrentLine([pos.x, pos.y]);
+      if (store.state.activeTool === 'pen') {
+        // For pen tool, each click adds a point.
+        if (currentLine.length === 0) {
+          setCurrentLine([pos.x, pos.y]);
+          setPreviewLine([pos.x, pos.y, pos.x, pos.y]);
+        } else {
+          // If close enough to first point, close it
+          const firstX = currentLine[0];
+          const firstY = currentLine[1];
+          const dist = Math.hypot(pos.x - firstX, pos.y - firstY);
+          if (dist < 10 && currentLine.length > 4) {
+            setIsDrawing(false);
+            store.addElement({
+              type: "line",
+              name: "Path",
+              x: 0, y: 0,
+              rotation: 0, scaleX: 1, scaleY: 1,
+              opacity: 1, isLocked: false, isHidden: false,
+              points: currentLine,
+              closed: true,
+              fill: "#000000",
+              stroke: { color: "#000", width: 2 }
+            });
+            setCurrentLine([]);
+            setPreviewLine([]);
+            store.setTool('select');
+          } else {
+            setCurrentLine([...currentLine, pos.x, pos.y]);
+            setPreviewLine([pos.x, pos.y, pos.x, pos.y]);
+          }
+        }
+      } else {
+        // Pencil (freehand)
+        setCurrentLine([pos.x, pos.y]);
+      }
     }
   };
 
@@ -364,6 +401,33 @@ export function CanvasWorkspace() {
       const stage = e.target.getStage();
       const point = stage.getRelativePointerPosition();
       setCurrentLine([...currentLine, point.x, point.y]);
+    } else if (store.state.activeTool === 'pen') {
+      const stage = e.target.getStage();
+      const point = stage.getRelativePointerPosition();
+      if (currentLine.length >= 2) {
+        const lastX = currentLine[currentLine.length - 2];
+        const lastY = currentLine[currentLine.length - 1];
+        setPreviewLine([lastX, lastY, point.x, point.y]);
+      }
+    }
+  };
+
+  const handleDoubleClick = (e: any) => {
+    if (store.state.activeTool === 'pen' && isDrawing && currentLine.length > 2) {
+      setIsDrawing(false);
+      store.addElement({
+        type: "line",
+        name: "Path",
+        x: 0, y: 0,
+        rotation: 0, scaleX: 1, scaleY: 1,
+        opacity: 1, isLocked: false, isHidden: false,
+        points: currentLine,
+        closed: false,
+        stroke: { color: "#000", width: 2 }
+      });
+      setCurrentLine([]);
+      setPreviewLine([]);
+      store.setTool('select');
     }
   };
 
@@ -432,7 +496,10 @@ export function CanvasWorkspace() {
               }
             }}
           >
-            <Layer>
+              <Layer
+                onDblClick={handleDoubleClick}
+                onDblTap={handleDoubleClick}
+              >
               <Rect
                 name="bg-rect"
                 x={0} y={0}
@@ -570,10 +637,23 @@ export function CanvasWorkspace() {
                 <Line
                   points={currentLine}
                   stroke="#000"
-                  strokeWidth={4}
-                  tension={0.5}
+                  strokeWidth={store.state.activeTool === 'pen' ? 2 : 4}
+                  tension={store.state.activeTool === 'pen' ? 0 : 0.5}
                   lineCap="round"
                   lineJoin="round"
+                  closed={false}
+                />
+              )}
+              {isDrawing && store.state.activeTool === 'pen' && previewLine.length > 0 && (
+                <Line
+                  points={previewLine}
+                  stroke="#000"
+                  strokeWidth={2}
+                  tension={0}
+                  dash={[5, 5]}
+                  lineCap="round"
+                  lineJoin="round"
+                  closed={false}
                 />
               )}
 

@@ -1,5 +1,5 @@
-export type ElementType = "rectangle" | "ellipse" | "text" | "image" | "path" | "polygon" | "line" | "group";
-export type ToolType = "select" | "hand" | "node" | "pen" | "pencil" | "rectangle" | "ellipse" | "text" | "image" | "line";
+export type ElementType = "rectangle" | "ellipse" | "text" | "image" | "path" | "polygon" | "line" | "group" | "star";
+export type ToolType = "select" | "hand" | "node" | "pen" | "pencil" | "rectangle" | "ellipse" | "text" | "image" | "line" | "polygon" | "star";
 
 export interface Position {
   x: number;
@@ -50,6 +50,13 @@ export interface CanvasElement {
   // Path / Line Specific
   points?: number[]; // [x1,y1, x2,y2, ...]
   closed?: boolean;
+
+  // Shape Specific (Rounded Rect, Polygon, Star)
+  cornerRadius?: number;
+  sides?: number;
+  innerRadius?: number;
+  outerRadius?: number;
+  numPoints?: number;
 
   // Image Specific
   src?: string; // base64 or objectURL
